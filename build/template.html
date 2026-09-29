@@ -1,0 +1,757 @@
+<title>Usabilidad Campus Virtual Docentes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  /* Identidad Universidad del Magdalena */
+  --brand:#004A87; --brand-700:#003A6B; --brand-900:#00294B; --brand-50:#EAF1F8; --gold:#D17900;
+  --page:#F2F5F9; --surface:#FFFFFF; --surface-2:#F6F9FC;
+  --ink:#0E2238; --ink-2:#4A5A6E; --muted:#7A8799;
+  --grid:#E3E9F0; --line:#CFD8E3; --ring:rgba(0,41,75,.10);
+  /* Un color fijo por periodo (en orden cronológico) */
+  --c0:#004A87; --c1:#00A50B; --c2:#D17900; --none:#C9D3DE;
+  /* Constancia de docentes (violeta, distinto de los periodos) */
+  --s3:#4B2E83; --s2:#8A6CC2; --s1:#C9B8E8;
+  --up:#1E7A34; --down:#B3261E; --chip-up:#E4F3E8; --chip-down:#FBE8E6; --chip-flat:#EBEFF4;
+  --focus:#D17900;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--page);color:var(--ink);font:14px/1.5 "Instrument Sans",system-ui,"Segoe UI",sans-serif;padding-inline:16px;padding-block:24px 48px}
+.wrap{max-width:1240px;margin:0 auto;display:grid;gap:20px}
+h1,h2,h3{margin:0;text-wrap:balance;font-family:"Montserrat","Instrument Sans",system-ui,sans-serif}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* Header */
+.head{display:flex;flex-wrap:wrap;gap:18px 32px;align-items:flex-end;justify-content:space-between;
+  background:linear-gradient(135deg,var(--brand) 0%,var(--brand-700) 60%,var(--brand-900) 100%);
+  color:#fff;border-radius:16px;padding:26px 26px 22px;border-bottom:5px solid var(--gold)}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#FFC766;font-weight:600}
+h1{font-weight:700;font-size:clamp(26px,3.8vw,38px);line-height:1.1;letter-spacing:-.015em;margin-top:4px}
+.lede{margin:6px 0 0;color:rgba(255,255,255,.82);font-size:14px}
+.periods{display:flex;flex-wrap:wrap;gap:10px}
+.period{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:9px 13px}
+.sw{width:12px;height:12px;border-radius:3px;flex:none}
+.head .sw{box-shadow:0 0 0 2px #fff}
+.period b{display:block;font-size:13px}
+.period span{font-size:12px;color:rgba(255,255,255,.8)}
+
+/* Filter bar */
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--page);padding-block:10px;display:grid;gap:10px}
+.frow{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.field{display:grid;gap:4px;min-width:0;flex:1 1 200px}
+.field label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+select,input[type=search]{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:38px}
+select:disabled{opacity:.55}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px;flex:none}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:6px;cursor:pointer;color:var(--ink-2);font-weight:500;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--ink-2)}
+.crumbs button{border:0;background:none;padding:2px 4px;border-radius:4px;cursor:pointer;color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.crumbs button:hover{text-decoration-color:var(--ink)}
+.crumbs .sep{color:var(--muted)}
+.crumbs .cur{font-weight:600;color:var(--brand)}
+.reset{border:1px solid var(--brand);color:var(--brand);font-weight:600;background:var(--surface);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:38px;flex:none}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start}
+.kpi h3{font-size:13px;font-weight:700;color:var(--brand-700)}
+.pair{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:8px}
+.vs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:4px}
+.vs small{font-size:10.5px;color:var(--muted)}
+.field.fixed{flex:none}
+.dd{position:relative}
+.dd summary{list-style:none;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 34px 8px 10px;min-height:38px;cursor:pointer;position:relative;white-space:nowrap;overflow:hidden}
+.dd summary::-webkit-details-marker{display:none}
+.dd summary::after{content:"";position:absolute;right:13px;top:50%;width:7px;height:7px;border-right:2px solid var(--ink-2);border-bottom:2px solid var(--ink-2);transform:translateY(-70%) rotate(45deg);transition:transform .15s}
+.dd[open] summary{border-color:var(--brand)}
+.dd[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+.dd .sws{display:inline-flex;gap:3px;flex:none}
+.dd .st-txt{overflow:hidden;text-overflow:ellipsis}
+.ddp{position:absolute;z-index:20;left:0;right:0;min-width:240px;margin-top:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(0,41,75,.14);padding:6px;display:grid;gap:2px}
+.opt{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;cursor:pointer}
+.opt:hover{background:var(--brand-50)}
+.opt input{accent-color:var(--brand);width:16px;height:16px;margin:0}
+.opt span{font-weight:500}
+.opt small{margin-left:auto;color:var(--muted);font-size:11.5px}
+.opt:has(input:disabled){cursor:default}
+.ddh{margin:4px 10px 6px;font-size:11.5px;color:var(--muted)}
+/* Multi-select filters */
+.ms .ddp{max-height:min(420px,60vh);overflow:auto;min-width:min(340px,calc(100vw - 32px))}
+.ms .ddq{position:sticky;top:-6px;background:var(--surface);padding:4px 2px 6px;display:grid;gap:6px;z-index:1}
+.ms .ddq input{min-height:34px;font-size:13px}
+.ms .ddq div{display:flex;gap:6px}
+.ms .ddq button{flex:1;border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--brand)}
+.ms .opt{align-items:flex-start;padding:7px 10px;text-transform:none;letter-spacing:0;color:var(--ink);font-size:13px}
+.ms .opt input{margin-top:2px;flex:none}
+.ms .opt span{display:grid;font-weight:500;font-size:13px;line-height:1.35}
+.ms .opt span small{margin:0;font-weight:400}
+.ms .st-txt.all{color:var(--ink-2)}
+.field{grid-template-columns:minmax(0,1fr)}
+.dd .st-txt{min-width:0;flex:1}
+/* Group colors and comparison panel */
+.gsw{display:inline-block;width:10px;height:10px;margin-right:7px;vertical-align:-1px}
+.cmplg{gap:6px}
+.cmplg button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--ink)}
+.cmplg button:hover{background:var(--brand-50);border-color:var(--brand)}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.mc{border:1px solid var(--grid);border-radius:10px;padding:12px 14px;display:grid;gap:7px;align-content:start;min-width:0}
+.mc h3{font-size:13px;font-weight:700;color:var(--brand-700);margin-bottom:2px}
+.mr{display:grid;gap:1px;min-width:0}
+.mr .mn{font-size:12px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mr .br{height:14px}
+.mr .br i{height:12px}
+.mr em.top{font-weight:700;color:var(--brand-900)}
+.cnt{flex:none;background:var(--brand);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px}
+.pv{display:grid;gap:2px}
+.pv .lab{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.pv .val{font-size:26px;font-weight:700;color:var(--brand-900);line-height:1.1;letter-spacing:-.01em}
+.pv .sub{font-size:12px;color:var(--ink-2)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;width:max-content}
+.chip.up{background:var(--chip-up);color:var(--up)}
+.chip.down{background:var(--chip-down);color:var(--down)}
+.chip.flat{background:var(--chip-flat);color:var(--ink-2)}
+.kpi .foot{font-size:12px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+
+/* Panels */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:12px}
+.panel{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:18px;display:grid;gap:14px;align-content:start;min-width:0}
+.ph{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;align-items:baseline}
+.ph h2{font-size:17px;font-weight:700;color:var(--brand-900)}
+.ph p{margin:0;font-size:12.5px;color:var(--ink-2);max-width:60ch}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* Bars */
+.bars{display:grid;gap:4px}
+.grp{display:grid;gap:3px;padding:6px 8px;border-radius:8px;cursor:default}
+.grp.click{cursor:pointer}
+.grp:hover{background:var(--brand-50)}
+.grp .gl{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.grp .gl .n{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.grp .gl .d{flex:none;font-size:12px}
+.br{display:flex;align-items:center;gap:8px;height:12px}
+.br i{display:block;height:10px;border-radius:0 4px 4px 0;min-width:2px}
+.br i.zero{background:var(--grid);width:2px}
+.br em{font-style:normal;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.hint{font-size:12px;color:var(--muted)}
+
+/* Status stack */
+.stack{display:flex;height:26px;gap:2px;border-radius:6px;overflow:hidden}
+.stack div{height:100%;min-width:2px}
+.stlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.st{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center}
+.st .sw{grid-row:span 2}
+.st b{font-size:20px;font-weight:600;line-height:1.1}
+.st span{font-size:12px;color:var(--ink-2);grid-column:2}
+
+/* Table */
+.tabs{display:inline-flex;gap:4px}
+.tblwrap{overflow-x:auto;border:1px solid var(--grid);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:880px;font-size:13px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--grid);vertical-align:top}
+th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--brand-700);font-weight:700;background:var(--brand-50);position:sticky;top:0;white-space:nowrap}
+th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
+th button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+th .ar{color:var(--ink);font-size:10px}
+td.r,th.r{text-align:right}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--brand-50)}
+.cn{font-weight:500}
+.cs{font-size:11.5px;color:var(--muted)}
+.tdot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.tag{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px;background:var(--chip-flat);color:var(--ink-2);white-space:nowrap}
+.tag.new{background:var(--chip-up);color:var(--up)}
+.pager{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--ink-2)}
+.pager button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;cursor:pointer}
+.pager button:disabled{opacity:.4;cursor:default}
+.note{font-size:12.5px;color:var(--ink-2);background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:14px 16px;display:grid;gap:6px}
+.note b{color:var(--brand-900)}
+.note ul{margin:0;padding-left:18px;display:grid;gap:4px}
+
+/* Tooltip */
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--brand-900);color:#fff;border-top:3px solid var(--gold);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.45;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+#tip b{display:block;margin-bottom:2px}
+#tip .tr{display:flex;align-items:center;gap:6px}
+#tip .tr i{width:8px;height:8px;border-radius:2px;display:inline-block}
+@media (prefers-reduced-motion:no-preference){ .br i{transition:width .35s ease} }
+.kpi .pair[style*="--n:3"] .pv .val{font-size:21px}
+/* Grid items must be allowed to shrink below their content width */
+.panel,.kpi{grid-template-columns:minmax(0,1fr)}
+.grid2>*,.kpis>*{min-width:0}
+.bars,.grp{grid-template-columns:minmax(0,1fr)}
+.grp .gl,.br{min-width:0}
+.swipe{display:none;font-size:12px;color:var(--muted)}
+
+/* Tablets */
+@media (max-width:1024px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .head{align-items:flex-start}
+}
+/* Phones and small tablets */
+@media (max-width:760px){
+  body{padding-block:12px 32px}
+  .wrap{gap:14px}
+  .head{padding:18px 16px 16px;border-radius:12px;gap:14px}
+  .eyebrow{font-size:11px}
+  .lede{font-size:13px}
+  .periods{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px}
+  .period{padding:7px 10px}
+  .filters{position:static;padding-block:0}
+  .frow{gap:8px}
+  .frow .field,.field.fixed{flex:1 1 100%}
+  .seg{display:flex;width:100%}
+  .seg button{flex:1;padding:9px 8px}
+  .reset{width:100%}
+  select,input[type=search],.dd summary{font-size:16px;min-height:44px}
+  .opt{padding:12px 10px}
+  .kpis{grid-template-columns:minmax(0,1fr);gap:10px}
+  .kpi{padding:14px}
+  .panel{padding:14px;gap:12px}
+  .ph{flex-direction:column;align-items:stretch}
+  .ph h2{font-size:16px}
+  .grp{padding:6px 4px}
+  .stlist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .swipe{display:block}
+  table{min-width:760px}
+  .pager{justify-content:center;text-align:center}
+  .pager button{padding:9px 16px}
+}
+@media (max-width:420px){
+  .pv .val{font-size:20px}
+  .kpi .pair[style*="--n:3"] .pv .val{font-size:17px}
+  .kpi .pair[style*="--n:3"]{gap:6px}
+  .stlist{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div>
+      <div class="eyebrow">Universidad del Magdalena · Campus Virtual</div>
+      <h1>Usabilidad Campus Virtual Docentes</h1>
+      <p class="lede">Pregrado presencial, distancia y posgrado · Periodo académico 2026-2</p>
+    </div>
+    <div class="periods" id="periods"></div>
+  </header>
+
+  <section class="filters" aria-label="Filtros">
+    <div class="frow">
+      <div class="field" id="perField"><label id="lPer">Periodos</label>
+        <details class="dd" id="perDD">
+          <summary aria-labelledby="lPer" id="perSum"></summary>
+          <div class="ddp" role="group" aria-label="Periodos a mostrar" id="perList"></div>
+        </details>
+      </div>
+      <div class="field fixed"><label>Medida</label>
+        <div class="seg" role="group" aria-label="Forma de medir">
+          <button type="button" id="mTot" aria-pressed="false">Total del periodo</button>
+          <button type="button" id="mDia" aria-pressed="true">Promedio por día</button>
+        </div>
+      </div>
+      <div class="field"><label id="lMod">Modalidad</label><details class="dd ms" id="fMod"></details></div>
+    </div>
+    <div class="frow">
+      <div class="field"><label id="lFac">Facultad</label><details class="dd ms" id="fFac"></details></div>
+      <div class="field"><label id="lProg">Programa</label><details class="dd ms" id="fProg"></details></div>
+      <div class="field"><label for="fQ">Buscar docente o curso</label><input id="fQ" type="search" placeholder="Nombre, usuario o código del curso" autocomplete="off"></div>
+      <button type="button" class="reset" id="reset">Limpiar filtros</button>
+    </div>
+    <nav class="crumbs" id="crumbs" aria-label="Nivel actual"></nav>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Indicadores"></section>
+
+  <section class="grid2">
+    <div class="panel">
+      <div class="ph">
+        <div><h2 id="tTime">Tiempo de uso docente</h2><p id="sTime"></p></div>
+        <div class="legend lg"></div>
+      </div>
+      <div class="bars" id="cTime"></div>
+    </div>
+    <div class="panel">
+      <div class="ph">
+        <div><h2>Recursos y actividades creados</h2><p id="sAct"></p></div>
+        <div class="legend lg"></div>
+      </div>
+      <div class="bars" id="cType"></div>
+      <div id="cActGrp"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="cmpPanel" hidden>
+    <div class="ph">
+      <div><h2 id="tCmp"></h2><p id="sCmp"></p></div>
+    </div>
+    <div class="legend cmplg" id="lgCmp"></div>
+    <div class="cmp" id="cmp"></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph">
+      <div><h2 id="tStat">¿Quiénes trabajaron en cada periodo?</h2><p id="sStat"></p></div>
+    </div>
+    <div class="stack" id="stack" role="img"></div>
+    <div class="stlist" id="stlist"></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph">
+      <div><h2>Detalle</h2><p id="sTbl"></p></div>
+      <div class="seg tabs" role="group" aria-label="Vista de la tabla">
+        <button type="button" id="vCur" aria-pressed="true">Por curso</button>
+        <button type="button" id="vDoc" aria-pressed="false">Por docente</button>
+        <button type="button" id="vGrp" aria-pressed="false">Comparar</button>
+      </div>
+    </div>
+    <p class="swipe">Desliza la tabla hacia los lados para ver todas las columnas →</p>
+    <div class="tblwrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+    <div class="pager"><span id="pgInfo"></span><span style="display:flex;gap:6px"><button type="button" id="pgPrev">Anterior</button><button type="button" id="pgNext">Siguiente</button></span></div>
+  </section>
+
+  <aside class="note">
+    <b>Cómo leer este tablero</b>
+    <ul>
+      <li id="varNote"><b>Variación (↑ ↓):</b> siempre compara el <b>ritmo diario</b> de un periodo con el anterior de los que estás viendo, para que los periodos de distinta duración se puedan comparar.</li>
+      <li><b>Tiempo de uso:</b> es una estimación a partir de los clics en Moodle. Se suma el tiempo entre clics consecutivos y se descartan las pausas de más de 30 minutos.</li>
+      <li><b>Recursos creados:</b> recursos y actividades agregados al curso en cada periodo. Los contenidos totales incluyen tareas, cuestionarios y foros. Se cuentan por curso, no por docente.</li>
+      <li id="cutNote"></li>
+    </ul>
+  </aside>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const D = /*__DATA__*/null;
+const P = D.p, NP = P.length;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const fmt = (n, dec=0) => Number(n).toLocaleString('es-CO', {minimumFractionDigits:dec, maximumFractionDigits:dec});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hm = m => { m = Math.round(m); const h = Math.floor(m/60), r = m%60; return h ? `${fmt(h)} h ${String(r).padStart(2,'0')} m` : `${r} min`; };
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const col = p => `var(--c${p})`;
+const sw = p => `<i class="sw" style="background:${col(p)}"></i>`;
+
+const TK = D.teachers.map(t => norm(t[0]+' '+t[1]));
+const CK = D.courses.map(c => norm(c[0]+' '+c[1]));
+const uniq = a => [...new Set(a)].sort((x,y)=>x.localeCompare(y,'es'));
+const mods = uniq(D.cats.map(c => c[0]));
+// Programa = facultad + nombre, porque "(Cursos directos de la facultad)" se repite en todas
+const DIRECT = '(Cursos directos de la facultad)';
+const pk = c => c[1]+'|'+c[2];
+const progName = c => c[2]===DIRECT ? `${c[1]} (cursos directos)` : c[2];
+const inSet = (s, v) => !s.size || s.has(v);
+
+const S = { mod:new Set(), fac:new Set(), prog:new Set(), q:'', mode:'dia', sel:new Set(P.map((_,i)=>i).slice(-2)), view:'cur', sort:{cur:['m'+(NP-1),-1], doc:['m'+(NP-1),-1], grp:['act',-1]}, page:0 };
+const shown = () => P.map((_,i)=>i).filter(i=>S.sel.has(i));
+
+// Header and notes
+$('#periods').innerHTML = P.map((p,i)=>`<div class="period">${sw(i)}<div><b>${esc(p.label)}</b><span>${fmt(p.days,1).replace(',0','')} días · ${esc(p.note)}</span></div></div>`).join('');
+const partial = P.filter(p=>p.note.startsWith('corte'));
+$('#cutNote').innerHTML = partial.length ? partial.map(p=>`<b>El periodo ${esc(p.label)} está incompleto:</b> el informe tiene ${esc(p.note)}, así que cubre ${fmt(p.days,1)} días. Su ritmo diario se calcula con esa duración.`).join(' ') : '';
+if(!partial.length) $('#cutNote').hidden = true;
+// Un solo periodo: no hay nada que seleccionar ni comparar
+if(NP===1){ $('#perField').hidden = true; $('#varNote').hidden = true; $('#tStat').textContent = '¿Cuántos docentes trabajaron en el periodo?'; }
+
+// Period multi-select (accordion)
+$('#perList').innerHTML = P.map((p,i)=>`<label class="opt"><input type="checkbox" id="per${i}" value="${i}" checked>${sw(i)}<span>${esc(p.label)}</span><small>${fmt(p.days,1).replace(',0','')} días</small></label>`).join('')
+  + '<p class="ddh">Marca uno o varios. La variación compara cada periodo con el anterior marcado.</p>';
+function syncPeriodUI(){
+  const sh = shown();
+  $('#perSum').innerHTML = `<span class="sws">${sh.map(p=>sw(p)).join('')}</span><span class="st-txt">${sh.length===NP ? 'Todos los periodos' : sh.map(p=>esc(P[p].label)).join(', ')}</span>`;
+  // Keep at least one period selected
+  P.forEach((_,i)=>{ const cb = $('#per'+i); cb.checked = S.sel.has(i); cb.disabled = S.sel.size===1 && S.sel.has(i); });
+  $$('.lg').forEach(el => el.innerHTML = sh.map(p=>`<span>${sw(p)}${esc(P[p].label)}</span>`).join(''));
+}
+$('#perList').addEventListener('change', e => {
+  const i = +e.target.value; e.target.checked ? S.sel.add(i) : S.sel.delete(i);
+  fixSort(); syncPeriodUI(); render();
+});
+document.addEventListener('click', e => { for(const dd of $$('details.dd[open]')) if(!dd.contains(e.target)) dd.open = false; });
+document.addEventListener('keydown', e => { if(e.key==='Escape') for(const dd of $$('details.dd[open]')) dd.open = false; });
+// Only one dropdown open at a time
+document.addEventListener('toggle', e => { if(e.target.open) for(const dd of $$('details.dd[open]')) if(dd!==e.target) dd.open = false; }, true);
+function fixSort(){ const last = shown().at(-1); for(const v of ['cur','doc']){ const k = S.sort[v][0]; const m = k.match(/^[ma](\d)$/); if(m && !shown().includes(+m[1])) S.sort[v] = ['m'+last, -1]; } }
+
+// Filters
+// Multi-select filters: Modalidad → Facultad → Programa. Nothing marked = all.
+const LEVELS = ['mod','fac','prog'];
+const MS = {
+  mod: { el:'#fMod', lab:'lMod', all:'Todas las modalidades', pl:'modalidades',
+         opts:()=>mods.map(m=>({v:m, t:m})) },
+  fac: { el:'#fFac', lab:'lFac', all:'Todas las facultades', pl:'facultades',
+         opts:()=>uniq(D.cats.filter(c=>inSet(S.mod,c[0])).map(c=>c[1])).map(f=>({v:f, t:f})) },
+  prog:{ el:'#fProg', lab:'lProg', all:'Todos los programas', pl:'programas', search:true,
+         opts:()=>{ const m = new Map(); for(const c of D.cats) if(inSet(S.mod,c[0]) && inSet(S.fac,c[1])) m.set(pk(c), {v:pk(c), t:progName(c), s:c[1]});
+                    return [...m.values()].sort((a,b)=>a.t.localeCompare(b.t,'es')); } },
+};
+const nameOf = (k, v) => k==='prog' ? progName(['', ...v.split('|')]) : v;
+for(const k of LEVELS){
+  const m = MS[k], el = $(m.el);
+  el.innerHTML = `<summary aria-labelledby="${m.lab}"></summary><div class="ddp" role="group" aria-labelledby="${m.lab}">
+    <div class="ddq">${m.search?`<input type="search" placeholder="Buscar ${m.pl}" autocomplete="off">`:''}<div><button type="button" data-a="all">Marcar ${m.search?'los visibles':'todas'}</button><button type="button" data-a="none">Quitar selección</button></div></div>
+    <div class="msl"></div><p class="ddh">Marca varios para compararlos entre sí. Sin marcar = todos.</p></div>`;
+  const q = el.querySelector('input[type=search]');
+  if(q) q.oninput = ()=>applySearch(k);
+  el.querySelector('.msl').addEventListener('change', e => { const v = e.target.value; e.target.checked ? S[k].add(v) : S[k].delete(v); changed(k); });
+  el.querySelectorAll('.ddq button').forEach(b => b.onclick = ()=>{
+    if(b.dataset.a==='none') S[k].clear();
+    else el.querySelectorAll('.msl .opt:not([hidden]) input').forEach(i=>S[k].add(i.value));
+    fillList(k); changed(k);
+  });
+}
+function applySearch(k){
+  const el = $(MS[k].el), q = el.querySelector('input[type=search]'), t = q ? norm(q.value.trim()) : '';
+  el.querySelectorAll('.msl .opt').forEach(o => o.hidden = !!t && !o.dataset.k.includes(t));
+}
+function fillList(k){
+  const el = $(MS[k].el);
+  el.querySelector('.msl').innerHTML = MS[k].opts().map(o=>`<label class="opt" data-k="${esc(norm(o.t+' '+(o.s||'')))}"><input type="checkbox" value="${esc(o.v)}"${S[k].has(o.v)?' checked':''}><span>${esc(o.t)}${o.s && S.fac.size!==1?`<small>${esc(o.s)}</small>`:''}</span></label>`).join('');
+  applySearch(k);
+}
+function fillSummary(k){
+  const m = MS[k], s = S[k], names = [...s].map(v => nameOf(k, v));
+  $(m.el).querySelector('summary').innerHTML = !s.size ? `<span class="st-txt all">${m.all}</span>`
+    : `${s.size>1?`<span class="cnt">${s.size}</span>`:''}<span class="st-txt">${esc(names.join(', '))}</span>`;
+}
+// Drop selections that no longer exist under the upper levels, then refresh everything below k
+function changed(k){
+  S.page = 0;
+  for(const j of LEVELS.slice(LEVELS.indexOf(k)+1)){
+    const ok = new Set(MS[j].opts().map(o=>o.v));
+    for(const v of [...S[j]]) if(!ok.has(v)) S[j].delete(v);
+    fillList(j);
+  }
+  LEVELS.forEach(fillSummary); render();
+}
+function pick(k, v){ S[k] = new Set([v]); fillList(k); changed(k); }
+function clearFrom(k){ for(const j of LEVELS.slice(LEVELS.indexOf(k))){ S[j].clear(); fillList(j); } changed(k); }
+let qT; $('#fQ').oninput = e => { clearTimeout(qT); qT = setTimeout(()=>{ S.q = norm(e.target.value.trim()); S.page=0; render(); }, 180); };
+function setMode(m){ S.mode=m; $('#mTot').setAttribute('aria-pressed', m==='tot'); $('#mDia').setAttribute('aria-pressed', m==='dia'); render(); }
+$('#mTot').onclick = ()=>setMode('tot'); $('#mDia').onclick = ()=>setMode('dia');
+function setView(v){ S.view=v; S.page=0; for(const [id,x] of [['#vCur','cur'],['#vDoc','doc'],['#vGrp','grp']]) $(id).setAttribute('aria-pressed', v===x); renderTable(); }
+$('#vCur').onclick = ()=>setView('cur'); $('#vDoc').onclick = ()=>setView('doc'); $('#vGrp').onclick = ()=>setView('grp');
+$('#reset').onclick = ()=>{ S.q=''; $('#fQ').value=''; clearFrom('mod'); };
+$('#pgPrev').onclick = ()=>{ S.page--; renderTable(); };
+$('#pgNext').onclick = ()=>{ S.page++; renderTable(); };
+
+// Tooltip
+const tip = $('#tip');
+function showTip(e, html){ tip.innerHTML = html; tip.hidden = false; moveTip(e); }
+function moveTip(e){ const r = tip.getBoundingClientRect(); let x = e.clientX+14, y = e.clientY+14; if(x+r.width > innerWidth-8) x = e.clientX-r.width-14; if(y+r.height > innerHeight-8) y = e.clientY-r.height-14; tip.style.left = Math.max(8,x)+'px'; tip.style.top = Math.max(8,y)+'px'; }
+function hideTip(){ tip.hidden = true; }
+
+// Data
+let F = null;
+function filtered(){
+  const rows = [];
+  for(const r of D.rows){
+    const c = D.courses[r[1]], cat = D.cats[c[2]];
+    if(!inSet(S.mod, cat[0]) || !inSet(S.fac, cat[1]) || !inSet(S.prog, pk(cat))) continue;
+    if(S.q && !TK[r[0]].includes(S.q) && !CK[r[1]].includes(S.q)) continue;
+    rows.push(r);
+  }
+  return rows;
+}
+function agg(rows){
+  const o = { m:Array(NP).fill(0), t:new Set(), c:new Set(), tp:P.map(()=>new Set()), cp:P.map(()=>new Set()), a:P.map(()=>[0,0,0,0]) };
+  for(const r of rows){
+    o.t.add(r[0]); o.c.add(r[1]);
+    for(let p=0;p<NP;p++){ o.m[p]+=r[2][p]; if(r[2][p]>0){ o.tp[p].add(r[0]); o.cp[p].add(r[1]); } }
+  }
+  for(const ci of o.c){ const c = D.courses[ci]; for(let p=0;p<NP;p++) for(let i=0;i<4;i++) o.a[p][i]+=c[3+p][i]; }
+  return o;
+}
+// Change in daily rate from period pa (value va) to period pb (value vb)
+function delta(va, pa, vb, pb){
+  const r1 = va/P[pa].days, r2 = vb/P[pb].days;
+  if(r1===0 && r2===0) return {cls:'flat', txt:'Sin actividad', short:'—', pct:null};
+  if(r1===0) return {cls:'up', txt:'Nuevo', short:'Nuevo', pct:Infinity};
+  const p = (r2-r1)/r1*100;
+  if(Math.abs(p) < 1) return {cls:'flat', txt:'= Igual ritmo', short:'=', pct:0};
+  const s = `${p>0?'↑':'↓'} ${fmt(Math.abs(p))} %`;
+  return {cls: p>0?'up':'down', txt:`${s} ritmo diario`, short:s, pct:p};
+}
+const val = (v, p) => S.mode==='dia' ? v/P[p].days : v;
+const chip = (d, small) => `<span class="chip ${d.cls}"${small?' style="padding:1px 7px;font-size:11px"':''}>${small?d.short:d.txt}</span>`;
+const vsTxt = (sh, k) => `vs ${P[sh[k-1]].label}`;
+
+// KPIs
+function renderKPIs(o){
+  const sh = shown(), tt = o.t.size;
+  const pv = (p, v, sub, d) => `<div class="pv"><span class="lab">${sw(p)}${esc(P[p].label)}</span><span class="val num">${v}</span><span class="sub">${sub}</span>${d||''}</div>`;
+  const dd = (k, va, vb) => k ? `<span class="vs">${chip(delta(va, sh[k-1], vb, sh[k]), true)} <small>${esc(vsTxt(sh,k))}</small></span>` : '';
+  const pp = (k, a, b) => { if(!k) return ''; const d=b-a; const cls = Math.abs(d)<0.5?'flat':(d>0?'up':'down'); return `<span class="vs"><span class="chip ${cls}" style="padding:1px 7px;font-size:11px">${cls==='flat'?'=':(d>0?'↑ ':'↓ ')+fmt(Math.abs(d),1)+' pts'}</span> <small>${esc(vsTxt(sh,k))}</small></span>`; };
+  const pct = p => tt ? o.tp[p].size/tt*100 : 0;
+  const avg = p => o.tp[p].size ? o.m[p]/o.tp[p].size/P[p].days : 0;
+  const tile = (title, cells) => `<article class="kpi"><h3>${title}</h3><div class="pair" style="--n:${sh.length}">${cells}</div></article>`;
+  $('#kpis').innerHTML =
+    tile('Tiempo de uso docente', sh.map((p,k)=>pv(p, fmt(o.m[p]/60)+' h', fmt(o.m[p]/60/P[p].days,1)+' h por día', dd(k, o.m[sh[k-1]]??0, o.m[p]))).join('')) +
+    tile('Minutos al día por docente activo', sh.map((p,k)=>pv(p, fmt(avg(p),1), 'min/día · '+fmt(o.tp[p].size)+' docentes', dd(k, (avg(sh[k-1]??p))*P[sh[k-1]??p].days, avg(p)*P[p].days))).join('')) +
+    tile('Docentes activos en plataforma', sh.map((p,k)=>pv(p, fmt(pct(p),1)+' %', fmt(o.tp[p].size)+' de '+fmt(tt), pp(k, pct(sh[k-1]??p), pct(p)))).join('')) +
+    tile('Recursos y actividades creados', sh.map((p,k)=>pv(p, fmt(o.a[p][0]), fmt(o.a[p][0]/P[p].days,1)+' por día', dd(k, o.a[sh[k-1]]?.[0]??0, o.a[p][0]))).join(''));
+}
+
+// Grouped bars: g = {name, raw:[per period], extra, onClick}
+// Colores fijos por modalidad, facultad y programa (el mismo grupo conserva su color en todas las vistas)
+const MOD_C = {'Pregrado presencial':'#004A87', 'Distancia':'#00A50B', 'Posgrado':'#D17900'};
+const PAL = ['#1F64B0','#D17900','#00A50B','#7B5CC4','#C2185B','#00838F','#A68A00','#6D4C41','#E0457B','#546E7A','#2E7D32','#8E24AA'];
+const FAC_I = new Map(uniq(D.cats.map(c=>c[1])).map((f,i)=>[f,i]));
+// Programas: hay más de 80, así que el color depende de su posición entre los que se están viendo (no se repite hasta 12)
+let PROG_I = new Map();
+function colorOf(lvl, k){
+  if(lvl==='mod') return MOD_C[k] || PAL[mods.indexOf(k) % PAL.length];
+  if(lvl==='fac') return PAL[FAC_I.get(k) % PAL.length];
+  if(lvl==='prog') return PAL[(PROG_I.get(k) ?? 0) % PAL.length];
+  return null;
+}
+function bars(el, groups, f, rawF){
+  const sh = shown();
+  if(!groups.length){ el.innerHTML = '<p class="hint">No hay datos con los filtros actuales.</p>'; return; }
+  const max = Math.max(1, ...groups.flatMap(g => sh.map(p => val(g.raw[p], p))));
+  // Con un solo periodo, cada grupo se pinta con su propio color
+  const cOf = (g, p) => g.color && sh.length===1 ? g.color : col(p);
+  el.innerHTML = groups.map((g,i)=>{
+    const d = sh.length>1 ? delta(g.raw[sh.at(-2)], sh.at(-2), g.raw[sh.at(-1)], sh.at(-1)) : null;
+    return `<div class="grp${g.onClick?' click':''}" data-i="${i}" ${g.onClick?'tabindex="0" role="button"':''}>
+      <div class="gl"><span class="n" title="${esc(g.name)}">${g.color?`<i class="sw gsw" style="background:${g.color}"></i>`:''}${esc(g.name)}</span>${d?`<span class="d">${chip(d,true)}</span>`:''}</div>
+      ${sh.map(p=>{ const v = val(g.raw[p], p); return `<div class="br"><i style="width:calc((100% - 84px) * ${v? (v/max).toFixed(4) : 0});background:${v?cOf(g,p):'var(--grid)'}"></i><em class="num">${f(v)}</em></div>`; }).join('')}
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.grp').forEach(n=>{
+    const g = groups[+n.dataset.i];
+    n.onmouseenter = e => showTip(e, `<b>${esc(g.name)}</b>${sh.map(p=>`<div class="tr"><i style="background:${cOf(g,p)}"></i>${esc(P[p].label)}: ${esc(f(val(g.raw[p],p)))} (${esc(rawF(g.raw[p]))} en total)</div>`).join('')}${g.extra?`<div style="opacity:.8;margin-top:4px">${g.extra}</div>`:''}`);
+    n.onmousemove = moveTip; n.onmouseleave = hideTip;
+    if(g.onClick){ n.onclick = ()=>{hideTip(); g.onClick();}; n.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault(); g.onClick();} }; }
+  });
+}
+function groupBy(rows, keyFn){ const m = new Map(); for(const r of rows){ const k = keyFn(r); if(!m.has(k)) m.set(k, []); m.get(k).push(r); } return m; }
+// Chart level: several marked at a level → compare them; one marked → go one level down
+const LVL_NAME = {mod:'modalidad', fac:'facultad', prog:'programa', cur:'curso'};
+const LVL_PL = {mod:'modalidades', fac:'facultades', prog:'programas', cur:'cursos'};
+function level(){
+  if(S.prog.size) return S.prog.size>1 ? 'prog' : 'cur';
+  if(S.fac.size) return S.fac.size>1 ? 'fac' : 'prog';
+  if(S.mod.size) return S.mod.size>1 ? 'mod' : 'fac';
+  return 'mod';
+}
+const comparing = () => { const l = level(); return l!=='cur' && S[l].size>1; };
+function groups(rows, lvl){
+  const cat = r => D.cats[D.courses[r[1]][2]];
+  const key = lvl==='mod' ? r=>cat(r)[0] : lvl==='fac' ? r=>cat(r)[1] : lvl==='prog' ? r=>pk(cat(r)) : r=>r[1];
+  return [...groupBy(rows, key)].map(([k, rs]) => ({k, rs, o:agg(rs),
+    name: lvl==='cur' ? D.courses[k][1] : lvl==='prog' ? nameOf('prog', k) : k}));
+}
+
+function renderCharts(rows){
+  const sh = shown();
+  const lvl = level();
+  const lvlName = LVL_NAME[lvl];
+  const G = groups(rows, lvl).map(g => ({...g, color: colorOf(lvl, g.k), onClick: lvl==='cur' ? null : ()=>pick(lvl, g.k)}));
+  const sum = (g, arr) => sh.reduce((s,p)=>s+val(arr[p],p),0);
+  const fT = v => S.mode==='dia' ? fmt(v/60,1)+' h/día' : fmt(v/60)+' h';
+  let tg = G.map(g=>({ name:g.name, raw:g.o.m, color:g.color, onClick:g.onClick, extra:`${fmt(g.o.t.size)} docentes · ${fmt(g.o.c.size)} cursos` }))
+            .sort((a,b)=> sum(b,b.raw)-sum(a,a.raw));
+  const more = lvl==='cur' && tg.length>12 ? tg.length-12 : 0;
+  if(lvl==='cur') tg = tg.slice(0,12);
+  const vsNote = sh.length>1 ? ` La etiqueta compara ${P[sh.at(-1)].label} con ${P[sh.at(-2)].label}.` : '';
+  $('#tTime').textContent = `Tiempo de uso docente por ${lvlName}`;
+  $('#sTime').textContent = (S.mode==='dia'?'Horas por día':'Horas acumuladas') + ' que los docentes dedicaron al aula virtual.' + (comparing() ? ` Comparando ${S[lvl].size} ${LVL_PL[lvl]} seleccionad${lvl==='prog'?'o':'a'}s.` : '')
+    + (lvl!=='cur' ? ` Haz clic en ${lvl==='prog'?'un':'una'} ${lvlName} para ver su detalle.` : ' Los 12 cursos con más tiempo.') + vsNote;
+  bars($('#cTime'), tg, fT, v=>hm(v));
+  if(more){ $('#cTime').insertAdjacentHTML('beforeend', `<p class="hint">y ${fmt(more)} cursos más en la tabla de detalle.</p>`); }
+
+  const o = agg(rows);
+  const fA = v => S.mode==='dia' ? fmt(v,1)+'/día' : fmt(v);
+  bars($('#cType'), ['Contenidos (todos)','Tareas','Cuestionarios','Foros'].map((t,i)=>({ name:t, raw:P.map((_,p)=>o.a[p][i]) })), fA, v=>fmt(v));
+  let ag = G.map(g=>({ name:g.name, raw:P.map((_,p)=>g.o.a[p][0]), color:g.color, onClick:g.onClick,
+      extra: sh.map(p=>`${esc(P[p].label)}: tareas ${fmt(g.o.a[p][1])}, cuestionarios ${fmt(g.o.a[p][2])}, foros ${fmt(g.o.a[p][3])}`).join('<br>') }))
+    .filter(g=>sh.some(p=>g.raw[p])).sort((a,b)=>sum(b,b.raw)-sum(a,a.raw));
+  if(lvl==='cur') ag = ag.slice(0,12);
+  $('#sAct').textContent = `Por tipo y por ${lvlName}${S.mode==='dia'?', en promedio por día':''}.`;
+  $('#cActGrp').innerHTML = `<p class="hint" style="margin:6px 0 4px"><b style="color:var(--ink-2)">Por ${lvlName}${lvl==='cur'?' (12 con más creación)':''}</b></p><div class="bars"></div>`;
+  bars($('#cActGrp .bars'), ag, fA, v=>fmt(v));
+  renderCompare(G, lvl);
+}
+
+// Comparativo: los mismos grupos de las gráficas, lado a lado en varios indicadores
+const CMP_MAX = 15;
+function renderCompare(G, lvl){
+  const panel = $('#cmpPanel');
+  if(lvl==='cur' || G.length<2){ panel.hidden = true; return; }
+  panel.hidden = false;
+  const p = shown().at(-1), days = P[p].days, dia = S.mode==='dia';
+  let gs = G.map(g=>{ const o = g.o, act = o.tp[p].size;
+    return { name:g.name, color:g.color, onClick:g.onClick, t:o.t.size, act, c:o.c.size,
+      pa: o.t.size ? act/o.t.size*100 : 0, md: act ? o.m[p]/act/days : 0, h: o.m[p]/60/(dia?days:1),
+      pc: o.c.size ? o.cp[p].size/o.c.size*100 : 0, r: o.a[p][0]/(dia?days:1), rc: o.c.size ? o.a[p][0]/o.c.size : 0 }; })
+    .sort((a,b)=>b.h-a.h);
+  const extra = gs.length - CMP_MAX; gs = gs.slice(0, CMP_MAX);
+  const M = [
+    ['pa', 'Docentes activos en plataforma', v=>fmt(v,1)+' %', g=>`${fmt(g.act)} de ${fmt(g.t)} docentes`, 100],
+    ['md', 'Minutos al día por docente activo', v=>fmt(v,1), g=>`${fmt(g.act)} docentes activos`],
+    ['h', dia ? 'Tiempo de uso (horas por día)' : 'Tiempo de uso (horas)', v=>fmt(v, dia?1:0)+' h', g=>`${fmt(g.t)} docentes`],
+    ['pc', 'Cursos con actividad docente', v=>fmt(v,1)+' %', g=>`de ${fmt(g.c)} cursos`, 100],
+    ['r', dia ? 'Recursos creados por día' : 'Recursos y actividades creados', v=>fmt(v, dia?1:0), g=>`${fmt(g.c)} cursos`],
+    ['rc', 'Recursos creados por curso', v=>fmt(v,1), g=>`${fmt(g.c)} cursos`],
+  ];
+  $('#tCmp').textContent = `Comparativo entre ${LVL_PL[lvl]}`;
+  const m = lvl==='prog';
+  $('#sCmp').textContent = `Cada color es ${m?'un':'una'} ${LVL_NAME[lvl]}. Los porcentajes y promedios permiten comparar grupos de distinto tamaño. Haz clic en un nombre para ver su detalle.`
+    + (extra>0 ? ` Se muestran ${m?'los':'las'} ${CMP_MAX} con más tiempo de uso; marca en los filtros ${m?'los':'las'} que quieras comparar.` : '');
+  $('#lgCmp').innerHTML = gs.map((g,i)=>`<button type="button" data-i="${i}"><i class="sw" style="background:${g.color}"></i>${esc(g.name)}</button>`).join('');
+  $('#lgCmp').querySelectorAll('button').forEach(b=> b.onclick = ()=>{ hideTip(); gs[+b.dataset.i].onClick(); });
+  $('#cmp').innerHTML = M.map(([k, title, f, sub, cap])=>{
+    const max = cap || Math.max(1e-9, ...gs.map(g=>g[k]));
+    const best = Math.max(...gs.map(g=>g[k]));
+    return `<article class="mc"><h3>${esc(title)}</h3>${[...gs].sort((a,b)=>b[k]-a[k]).map(g=>`<div class="mr" title="${esc(g.name)}: ${esc(f(g[k]))} · ${esc(sub(g))}">
+      <span class="mn">${esc(g.name)}</span>
+      <div class="br"><i style="width:calc((100% - 64px) * ${(g[k]/max).toFixed(4)});background:${g[k]?g.color:'var(--grid)'}"></i><em class="num${g[k]===best&&best>0?' top':''}">${f(g[k])}</em></div></div>`).join('')}</article>`;
+  }).join('');
+}
+
+function renderStatus(rows){
+  const sh = shown();
+  const per = new Map();
+  for(const r of rows){ const s = per.get(r[0]) || P.map(()=>0); for(let p=0;p<NP;p++) s[p]+=r[2][p]; per.set(r[0], s); }
+  let items;
+  if(sh.length===1){
+    const p = sh[0]; let a=0,n=0; for(const [,s] of per) s[p]>0 ? a++ : n++;
+    items = [[a, `Con actividad en ${P[p].label}`, col(p)], [n, 'Sin actividad', 'var(--none)']];
+    $('#sStat').textContent = `Docentes que registraron tiempo en el aula virtual entre ${P[p].label}.`;
+  } else if(sh.length===2){
+    const [pa,pb] = sh; const c=[0,0,0,0];
+    for(const [,s] of per){ const x=s[pa]>0, y=s[pb]>0; c[x&&y?0:x?1:y?2:3]++; }
+    items = [[c[0],'En ambos periodos','var(--s3)'], [c[1],`Solo en ${P[pa].label}`, col(pa)], [c[2],`Solo en ${P[pb].label}`, col(pb)], [c[3],'Sin actividad en ninguno','var(--none)']];
+    $('#sStat').textContent = 'Docentes según si registraron tiempo en uno, ambos o ningún periodo.';
+  } else {
+    const c = Array(NP+1).fill(0);
+    for(const [,s] of per){ c[sh.filter(p=>s[p]>0).length]++; }
+    items = [];
+    for(let k=NP;k>=1;k--) items.push([c[k], k===NP?`En los ${NP} periodos`:`En ${k} de ${NP} periodos`, `var(--s${Math.min(3,k)})`]);
+    items.push([c[0], 'Sin actividad en ninguno', 'var(--none)']);
+    $('#sStat').textContent = 'Constancia: en cuántos de los periodos registró tiempo cada docente.';
+  }
+  const tot = per.size || 1;
+  $('#stack').innerHTML = items.map((it,i)=> it[0] ? `<div style="flex:${it[0]};background:${it[2]}" data-i="${i}"></div>` : '').join('');
+  $('#stack').setAttribute('aria-label', items.map(it=>`${it[1]}: ${it[0]}`).join('; '));
+  $('#stack').querySelectorAll('div').forEach(n=>{ const it = items[+n.dataset.i]; n.onmouseenter = e=>showTip(e, `<b>${esc(it[1])}</b>${fmt(it[0])} docentes (${fmt(it[0]/tot*100,1)} %)`); n.onmousemove = moveTip; n.onmouseleave = hideTip; });
+  $('#stlist').innerHTML = items.map(it=>`<div class="st"><i class="sw" style="background:${it[2]}"></i><b class="num">${fmt(it[0])}</b><span>${esc(it[1])} · ${fmt(it[0]/tot*100,1)} %</span></div>`).join('');
+}
+
+// Table
+const PAGE = 25;
+function tableData(rows){
+  const sh = shown(), la = sh.at(-2), lb = sh.at(-1);
+  const build = (name, sub, grp, n, who, m, a) => {
+    const o = { name, sub, grp, n, who, m, a };
+    P.forEach((_,p)=>{ o['m'+p]=m[p]; o['a'+p]=a[p]; });
+    o.dd = sh.length>1 ? delta(m[la], la, m[lb], lb) : null;
+    o.d = o.dd ? (o.dd.pct ?? -Infinity) : 0;
+    return o;
+  };
+  if(S.view==='cur'){
+    return [...groupBy(rows, r=>r[1])].map(([ci, rs])=>{ const c = D.courses[ci]; const m = P.map(()=>0);
+      for(const r of rs) for(let p=0;p<NP;p++) m[p]+=r[2][p];
+      const cat = D.cats[c[2]];
+      const o = build(c[1], c[0], cat[2]==='(Cursos directos de la facultad)'?cat[1]:cat[2], rs.length, rs.map(r=>D.teachers[r[0]][0]).join(', '), m, P.map((_,p)=>c[3+p][0]));
+      o.gsub = cat[0]; return o; });
+  }
+  return [...groupBy(rows, r=>r[0])].map(([ti, rs])=>{ const t = D.teachers[ti]; const m = P.map(()=>0), e = P.map(()=>0);
+    for(const r of rs) for(let p=0;p<NP;p++){ m[p]+=r[2][p]; e[p]+=r[3][p]; }
+    const cs = rs.map(r=>D.cats[D.courses[r[1]][2]]);
+    const o = build(t[0], t[1], [...new Set(cs.map(c=>c[1]))].join(', '), rs.length, rs.map(r=>D.courses[r[1]][1]).join(', '), m, e);
+    o.gsub = [...new Set(cs.map(c=>c[0]))].join(', '); return o; });
+}
+// Side-by-side comparison of the groups shown in the charts (modalidades, facultades or programas)
+function renderGroupTable(){
+  const p = shown().at(-1), days = P[p].days;
+  const lvl = level()==='cur' ? 'prog' : level();
+  const data = groups(F, lvl).map(g => { const o = g.o, act = o.tp[p].size, tt = o.t.size;
+    return { name:g.name, color:colorOf(lvl, g.k), sub: lvl==='prog' ? g.k.split('|')[0] : '', t:tt, act, pa: tt ? act/tt*100 : 0,
+      h:o.m[p], md: act ? o.m[p]/act/days : 0, c:o.c.size, pc: o.c.size ? o.cp[p].size/o.c.size*100 : 0,
+      r:o.a[p][0], ta:o.a[p][1], cu:o.a[p][2], fo:o.a[p][3] }; });
+  const [sk, sd] = S.sort.grp;
+  data.sort((a,b)=>{ const x=a[sk], y=b[sk]; return (typeof x==='string' ? x.localeCompare(y,'es') : (x===y?0:(x<y?-1:1))) * sd; });
+  const cols = [['name', LVL_NAME[lvl][0].toUpperCase()+LVL_NAME[lvl].slice(1), ''], ['t','Docentes','r'], ['pa','Docentes activos','r'], ['h','Tiempo de uso','r'],
+    ['md','Min/día por docente activo','r'], ['c','Cursos','r'], ['pc','Cursos con actividad','r'], ['r','Recursos creados','r'], ['ta','Tareas','r'], ['cu','Cuestionarios','r'], ['fo','Foros','r']];
+  $('#tbl thead').innerHTML = '<tr>' + cols.map(([k,l,c])=>`<th class="${c}" aria-sort="${sk===k?(sd>0?'ascending':'descending'):'none'}"><button type="button" data-k="${k}">${esc(l)}${sk===k?`<span class="ar">${sd>0?'▲':'▼'}</span>`:''}</button></th>`).join('') + '</tr>';
+  $('#tbl thead').querySelectorAll('button').forEach(b=> b.onclick = ()=>{ const k=b.dataset.k; const cur=S.sort.grp; S.sort.grp = [k, cur[0]===k ? -cur[1] : (k==='name'?1:-1)]; renderTable(); });
+  // Mark the best value of each numeric column when comparing
+  const best = {}; if(data.length>1) for(const [k,,c] of cols) if(c==='r') best[k] = Math.max(...data.map(d=>d[k]));
+  const cell = (d, k, txt, sub) => `<td class="r num"${best[k] && d[k]===best[k]?' style="font-weight:700;color:var(--brand)"':''}>${txt}${sub?`<div class="cs">${sub}</div>`:''}</td>`;
+  const tot = v => S.mode==='dia' ? fmt(v/days,1)+'/día' : fmt(v);
+  $('#tbl tbody').innerHTML = data.length ? data.map(d=>`<tr>
+      <td><div class="cn"><i class="sw gsw" style="background:${d.color}"></i>${esc(d.name)}</div>${d.sub?`<div class="cs">${esc(d.sub)}</div>`:''}</td>
+      ${cell(d,'t',fmt(d.t))}${cell(d,'pa',fmt(d.pa,1)+' %',fmt(d.act)+' docentes')}
+      ${cell(d,'h',S.mode==='dia'?fmt(d.h/60/days,1)+' h/día':fmt(d.h/60)+' h')}${cell(d,'md',fmt(d.md,1))}
+      ${cell(d,'c',fmt(d.c))}${cell(d,'pc',fmt(d.pc,1)+' %')}
+      ${cell(d,'r',tot(d.r))}${cell(d,'ta',tot(d.ta))}${cell(d,'cu',tot(d.cu))}${cell(d,'fo',tot(d.fo))}</tr>`).join('')
+    : `<tr><td colspan="${cols.length}" class="hint">No hay resultados con los filtros actuales.</td></tr>`;
+  $('#pgInfo').textContent = data.length ? `${fmt(data.length)} ${LVL_PL[lvl]}` : '';
+  $('#pgPrev').disabled = $('#pgNext').disabled = true;
+  $('#sTbl').textContent = `Indicadores de cada ${LVL_NAME[lvl]} lado a lado. Marca varias en los filtros para compararlas; en negrita, el valor más alto de cada columna. Ordena haciendo clic en los encabezados.`;
+}
+function renderTable(){
+  if(S.view==='grp') return renderGroupTable();
+  const sh = shown(), isC = S.view==='cur';
+  const data = tableData(F);
+  const [sk, sd] = S.sort[S.view];
+  data.sort((a,b)=>{ const x=a[sk], y=b[sk]; return (typeof x==='string' ? x.localeCompare(y,'es') : (x===y?0:(x<y?-1:1))) * sd; });
+  const cols = [['name', isC?'Curso':'Docente', ''], ['grp', isC?'Programa':'Facultad', ''], ['n', isC?'Docentes':'Cursos', 'r'],
+    ...sh.map(p=>['m'+p, 'Tiempo '+P[p].label, 'r', p])];
+  if(sh.length>1) cols.push(['d', `Variación ${P[sh.at(-1)].label}`, 'r']);
+  cols.push(...sh.map(p=>['a'+p, (isC?'Creados ':'Ediciones ')+P[p].label, 'r', p]));
+  $('#tbl thead').innerHTML = '<tr>' + cols.map(([k,l,c,p])=>`<th class="${c}" aria-sort="${sk===k?(sd>0?'ascending':'descending'):'none'}"><button type="button" data-k="${k}">${p!==undefined?`<span class="tdot" style="background:${col(p)}"></span>`:''}${esc(l)}${sk===k?`<span class="ar">${sd>0?'▲':'▼'}</span>`:''}</button></th>`).join('') + '</tr>';
+  $('#tbl thead').querySelectorAll('button').forEach(b=> b.onclick = ()=>{ const k=b.dataset.k; const cur=S.sort[S.view]; S.sort[S.view] = [k, cur[0]===k ? -cur[1] : (['name','grp'].includes(k)?1:-1)]; S.page=0; renderTable(); });
+  const pages = Math.max(1, Math.ceil(data.length/PAGE)); S.page = Math.min(Math.max(0,S.page), pages-1);
+  const slice = data.slice(S.page*PAGE, S.page*PAGE+PAGE);
+  $('#tbl tbody').innerHTML = slice.length ? slice.map(r=>{
+    const dd = r.dd;
+    const tag = !dd ? '' : dd.pct===Infinity ? '<span class="tag new">Nuevo</span>' : dd.pct===null ? '<span class="tag">Sin actividad</span>' : chip(dd, true);
+    return `<tr>
+      <td><div class="cn">${esc(r.name)}</div><div class="cs">${esc(r.sub)}</div></td>
+      <td>${esc(r.grp)}<div class="cs">${esc(r.gsub)}</div></td>
+      <td class="r num" title="${esc(r.who)}">${fmt(r.n)}</td>
+      ${sh.map(p=>`<td class="r num">${hm(r.m[p])}<div class="cs">${fmt(r.m[p]/P[p].days,1)} min/día</div></td>`).join('')}
+      ${sh.length>1?`<td class="r">${tag}</td>`:''}
+      ${sh.map(p=>`<td class="r num">${fmt(r.a[p])}</td>`).join('')}</tr>`;
+  }).join('') : `<tr><td colspan="${cols.length}" class="hint">No hay resultados con los filtros actuales.</td></tr>`;
+  $('#pgInfo').textContent = data.length ? `${fmt(S.page*PAGE+1)}–${fmt(S.page*PAGE+slice.length)} de ${fmt(data.length)} ${isC?'cursos':'docentes'}` : '';
+  $('#pgPrev').disabled = S.page<=0; $('#pgNext').disabled = S.page>=pages-1;
+  $('#sTbl').textContent = (isC
+    ? 'Tiempo que los docentes de cada curso dedicaron al aula virtual y recursos creados en el curso. Pasa el cursor sobre “Docentes” para ver los nombres.'
+    : 'Tiempo total de cada docente sumando todos sus cursos, y acciones de edición (crear, modificar o borrar). Pasa el cursor sobre “Cursos” para ver cuáles son.')
+    + ' Ordena haciendo clic en los encabezados.';
+}
+
+function renderCrumbs(){
+  // Cada nivel es un enlace para volver a él, salvo el último
+  const seg = k => S[k].size===1 ? nameOf(k, [...S[k]][0]) : `${S[k].size} ${LVL_PL[k]}`;
+  const lv = [['Todas las modalidades','root'], ...LEVELS.filter(k=>S[k].size).map(k=>[seg(k), k])];
+  const parts = lv.flatMap(([t,l],i)=>[...(i?['<span class="sep">›</span>']:[]), i<lv.length-1 ? `<button type="button" data-l="${l}">${esc(t)}</button>` : `<span class="cur">${esc(t)}</span>`]);
+  const sh = shown();
+  $('#crumbs').innerHTML = '<span>Estás viendo:</span>' + parts.join('') + (S.q ? ` <span class="sep">·</span> <span>búsqueda “${esc($('#fQ').value.trim())}”</span>` : '')
+    + ` <span class="sep">·</span> <span>${sh.map(p=>esc(P[p].label)).join(' vs ')}</span>`;
+  // Clicking a level clears everything below it
+  $('#crumbs').querySelectorAll('button').forEach(b=> b.onclick = ()=> { const l = b.dataset.l; clearFrom(l==='root' ? 'mod' : LEVELS[LEVELS.indexOf(l)+1]); });
+}
+
+function render(){
+  F = filtered();
+  if(level()==='prog') PROG_I = new Map(uniq(groups(F,'prog').map(g=>g.k)).map((k,i)=>[k,i]));
+  renderCrumbs();
+  renderKPIs(agg(F));
+  renderCharts(F);
+  renderStatus(F);
+  renderTable();
+}
+LEVELS.forEach(k=>{ fillList(k); fillSummary(k); }); syncPeriodUI(); render();
+</script>

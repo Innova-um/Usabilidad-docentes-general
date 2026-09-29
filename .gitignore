@@ -1,0 +1,6 @@
+# Datos de Moodle: contienen nombres y usuarios de docentes, no se suben
+*.xlsx
+*.csv
+# El tablero generado incluye esos datos; solo se sube cuando la publicación esté autorizada
+index.html
+__pycache__/
